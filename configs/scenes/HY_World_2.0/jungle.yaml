@@ -1,0 +1,6 @@
+dataset: HY_World_2.0
+scene: jungle
+# Imported with: ouroworld-import world --ply <HY-World 2.0>/mossy_forest/scene.ply --out output/HY_World_2.0/jungle/scene
+
+reference:
+  selected: reference

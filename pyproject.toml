@@ -1,0 +1,160 @@
+[build-system]
+requires = ["setuptools>=68,<81", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ouroworld"
+version = "0.1.0"
+description = "OuroWorld: 3D cinemagraphs from a static 3D Gaussian scene and a looping reference video."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = "==3.11.*"
+dependencies = [
+    "numpy>=1.26,<2",
+    "torch>=2.4",
+    "omegaconf>=2.3",
+    "plyfile>=1.0",
+    "scipy>=1.11",
+    "pillow>=9.4",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+reference-video = ["requests>=2.31", "imageio[ffmpeg]>=2.27", "opencv-python>=4.8"]
+refinement = ["diffusers==0.35.2", "transformers==4.49.0", "peft==0.17.1", "accelerate==1.4.0", "lpips==0.1.4"]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10", "import-linter>=2.0", "pre-commit>=3.7"]
+
+[project.scripts]
+ouroworld-train = "ouroworld.cli.train:main"
+ouroworld-render = "ouroworld.cli.render:main"
+ouroworld-multiview = "ouroworld.cli.multiview:main"
+ouroworld-reference-video = "ouroworld.cli.reference_video:main"
+ouroworld-import = "ouroworld.cli.scene:import_main"
+ouroworld-pivot = "ouroworld.cli.scene:pivot_main"
+ouroworld-reference = "ouroworld.cli.scene:reference_main"
+ouroworld-evaluate = "ouroworld.cli.evaluate:main"
+
+[tool.setuptools.packages.find]
+include = ["ouroworld*"]
+
+[tool.setuptools.package-data]
+"ouroworld.generation.prompt" = ["instructions.txt"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "N", "D"]
+ignore = [
+    "D105",  # magic methods document themselves
+    "D107",  # __init__ arguments are documented on the class
+    "N812",  # `import torch.nn.functional as F` is the community convention
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "N806"]
+# `K` is the standard name of an intrinsics matrix.
+"ouroworld/geometry/**" = ["N803", "N806"]
+"ouroworld/rendering/**" = ["N803", "N806"]
+"ouroworld/generation/**" = ["N803", "N806"]
+"ouroworld/datasets/**" = ["N803", "N806"]
+"ouroworld/reference/**" = ["N803", "N806"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "gpu: needs a CUDA device and the rasterizer extension",
+    "slow: takes more than a few seconds",
+]
+addopts = "-ra"
+pythonpath = ["."]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+check_untyped_defs = true
+files = [
+    "ouroworld/geometry",
+    "ouroworld/config",
+    "ouroworld/io",
+    "ouroworld/generation",
+    "ouroworld/adapters",
+    "ouroworld/reference",
+    "ouroworld/datasets",
+    "ouroworld/evaluation",
+]
+
+[tool.importlinter]
+root_package = "ouroworld"
+
+# Mirrors docs/refactor_plan.md §3.2. Lower layers never import upper ones, and
+# `render` and `fields` are parallel: only training/rendering combine them.
+[[tool.importlinter.contracts]]
+name = "Layered architecture"
+type = "layers"
+layers = [
+    "ouroworld.cli",
+    "ouroworld.training | ouroworld.rendering | ouroworld.generation | ouroworld.reference | ouroworld.datasets | ouroworld.evaluation",
+    "ouroworld.render | ouroworld.fields",
+    "ouroworld.gaussians",
+    "ouroworld.io",
+    "ouroworld.geometry",
+]
+
+[[tool.importlinter.contracts]]
+name = "Only the CLI reads the config schema"
+type = "forbidden"
+source_modules = [
+    "ouroworld.geometry",
+    "ouroworld.io",
+    "ouroworld.gaussians",
+    "ouroworld.render",
+    "ouroworld.fields",
+    "ouroworld.training",
+    "ouroworld.rendering",
+    "ouroworld.generation",
+    "ouroworld.reference",
+    "ouroworld.datasets",
+    "ouroworld.evaluation",
+    "ouroworld.adapters",
+]
+forbidden_modules = ["ouroworld.config"]
+
+[[tool.importlinter.contracts]]
+name = "Third-party code is reached only through the adapters, from generation and evaluation"
+type = "forbidden"
+source_modules = [
+    "ouroworld.geometry",
+    "ouroworld.io",
+    "ouroworld.gaussians",
+    "ouroworld.render",
+    "ouroworld.fields",
+    "ouroworld.training",
+    "ouroworld.rendering",
+    "ouroworld.reference",
+    "ouroworld.datasets",
+]
+forbidden_modules = ["ouroworld.adapters"]
+
+[[tool.importlinter.contracts]]
+name = "Adapters are self-contained"
+type = "forbidden"
+source_modules = ["ouroworld.adapters"]
+forbidden_modules = [
+    "ouroworld.geometry",
+    "ouroworld.io",
+    "ouroworld.gaussians",
+    "ouroworld.render",
+    "ouroworld.fields",
+    "ouroworld.training",
+    "ouroworld.rendering",
+    "ouroworld.generation",
+    "ouroworld.reference",
+    "ouroworld.datasets",
+    "ouroworld.evaluation",
+    "ouroworld.cli",
+]

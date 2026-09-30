@@ -1,0 +1,3 @@
+# Ablation: no Grounded Drift Field; every render uses P alone.
+model:
+  drift: {enabled: false}

@@ -1,0 +1,7 @@
+dataset: MipNeRF360
+scene: room
+# Imported with: ouroworld-import mipnerf360 --ply <3DGS>/point_cloud.ply --colmap <Mip-NeRF 360>/room
+#   --images images_2 --out output/MipNeRF360/room/scene
+
+reference:
+  selected: reference

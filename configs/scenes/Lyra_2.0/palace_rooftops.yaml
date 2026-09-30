@@ -1,0 +1,6 @@
+dataset: Lyra_2.0
+scene: palace_rooftops
+# Imported with: ouroworld-import lyra --source <Lyra 2.0>/lyra2_3dgs_scenes/02 --out output/Lyra_2.0/palace_rooftops/scene
+
+reference:
+  selected: reference

@@ -1,0 +1,43 @@
+OuroWorld
+=========
+
+The original code of this repository is under the MIT License (LICENSE). It
+also contains code derived from, or distributed together with, the following
+works. Their licenses apply to the corresponding parts, and several of them
+restrict use to non-commercial research, so running the full pipeline is
+limited to non-commercial research use.
+
+Derived code (rewritten, inside ouroworld/)
+-------------------------------------------
+- Free4D (S-Lab License 1.0, Copyright 2025 S-Lab). The triplane encoding,
+  the Gaussian model, its optimiser and densification, and the SD 1.5 + LCM
+  refinement are rewritten from Free4D's lib/. License text:
+  LICENSES/S-Lab-1.0.txt.
+- 3D Gaussian Splatting (Gaussian-Splatting License, Inria and MPII). The
+  Gaussian model, the PLY layout and the camera conventions follow the
+  official implementation. License text: LICENSES/Gaussian-Splatting.md.
+
+Vendored code (third_party/, unmodified unless noted in UPSTREAM_COMMIT)
+------------------------------------------------------------------------
+- diff-gaussian-rasterization (depth-differentiable fork): Gaussian-Splatting
+  License, third_party/diff-gaussian-rasterization/LICENSE.md
+- TrajectoryCrafter (Tencent): third_party/TrajectoryCrafter/License and
+  License_Model (the model weights follow the CogVideoX license)
+- VGGT-Omega (Meta): FAIR Noncommercial Research License,
+  third_party/vggt-omega/LICENSE
+- VBench: Apache License 2.0, third_party/VBench/LICENSE (two local patches,
+  listed in third_party/VBench/UPSTREAM_COMMIT)
+- SEA-RAFT (Princeton Vision & Learning Lab): BSD 3-Clause,
+  third_party/SEA-RAFT/LICENSE
+
+Model weights (downloaded by scripts/download_weights.py, not redistributed)
+---------------------------------------------------------------------------
+Stable Diffusion 1.5 (CreativeML OpenRAIL-M), LCM-LoRA, VGGT-Omega (gated,
+FAIR Noncommercial), CogVideoX-Fun and TrajectoryCrafter, BLIP-2, the VBench
+evaluation models (CLIP, DINO, ViCLIP, LAION aesthetic predictor), SEA-RAFT
+and the I3D TorchScript of StyleGAN-V. Each is used under its own license.
+
+Paid services
+-------------
+The reference-video step calls the OpenAI API (GPT-5.5) and BytePlus ModelArk
+(Seedance 2.0); their terms of service apply to the generated content.

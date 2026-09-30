@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  cpu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pip install torch==2.4.1 --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[dev,reference-video]"
+      - name: Lint
+        run: |
+          ruff check ouroworld tests
+          ruff format --check ouroworld
+      - name: Layering
+        run: lint-imports
+      - name: No names of upstream projects in our code
+        run: "! git grep -n -i free4d -- ouroworld tests configs"
+      - name: Unit tests
+        run: pytest tests/unit -q

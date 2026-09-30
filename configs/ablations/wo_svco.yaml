@@ -1,0 +1,5 @@
+# Ablation: no scene-view consistent optimisation. Every frame of every view,
+# generated ones included, is supervised with L1 and nothing is refined.
+train:
+  supervision: naive_l1
+  refinement: {enabled: false}

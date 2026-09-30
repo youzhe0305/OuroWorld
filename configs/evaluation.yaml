@@ -1,0 +1,61 @@
+# Evaluation of collected renders (paper §4.4, Tables 2 and 3).
+#
+# Renders are read from <results_root>/<group>/<dataset>/<scene>/<view>.mp4 for
+# the scenes in <results_root>/used_scene.json; each metric writes
+# <output_root>/<group>/<view>/<metric>.json and `ouroworld-evaluate tables`
+# assembles the tables from them.
+
+results_root: results
+output_root: output/evaluation
+views: [static, orbit]           # render file names; the first is the static camera
+device: cuda
+
+methods:                         # Table 2, in row order; cycle_seconds = the method's loop period
+  - {group: baselines/gaussians-to-life, label: Gaussians-to-Life, cycle_seconds: 0.5}
+  - {group: baselines/3d-cinemagraphy, label: 3D Cinemagraphy, cycle_seconds: 2.4}
+  - {group: baselines/loopgaussian, label: LoopGaussian, cycle_seconds: 2.0}
+  - {group: baselines/3d-mom, label: 3D-MOM, cycle_seconds: 2.0}
+  - {group: ours, label: Ours, cycle_seconds: 10.0}
+ablations:                       # Table 3, in row order (followed by `ours`)
+  - {group: ablation/nodrift, label: w/o Drift, cycle_seconds: 10.0}
+  - {group: ablation/ungrounded, label: w/o Grounding, cycle_seconds: 10.0}
+  - {group: ablation/fulll1, label: w/o Scene-View Consistent Optimization, cycle_seconds: 10.0}
+period_ablation:                 # §4.9 "periodic deformation": Seam SSIM with a period-2T basis
+  {group: ablation/aperiodic, label: Period 2T, cycle_seconds: 10.0}
+
+vividness:
+  sample_fps: 3.0
+  motion_threshold_percent: 0.3  # of the short image side
+  illumination_threshold_percent: 20.0
+  illumination_epsilon: 1.0e-6
+  sea_raft: checkpoints/sea-raft-spring-M
+
+naturalness:
+  reference_root: data/naturalness # MiniMax-H3 videos: <dataset>/<scene>/<pattern>
+  reference_pattern: minimax_h3_seed_*.mp4
+  reference_dataset_dirs:        # results dataset name -> directory under reference_root
+    lyra_2.0_v2: Lyra_2.0
+  i3d: checkpoints/i3d_torchscript.pt
+  feature_cache: output/evaluation/i3d_features
+  clip_seconds: 10.0             # one loop
+  clip_stride_seconds: 10.0
+  clip_frames: 60                # 6 FPS: real frames of both 24 and 30 FPS videos
+  frame_size: 224
+  max_clips_per_video: 0
+  subset_size: 100
+  subset_count: 100
+  kernel_degree: 3
+  kernel_coefficient: 1.0
+  seed: 0
+
+loop_seam:
+  samples_per_cycle: 10          # M in Eq. 4
+  max_ring_lags: 16
+
+sharpness:
+  frames: 25                     # sampled over one loop period
+  period_frames: 300
+
+scene_quality:
+  vbench_weights: checkpoints/vbench
+  prompts: results/prompts.json  # {"<dataset>/<scene>": motion prompt}

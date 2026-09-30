@@ -1,0 +1,57 @@
+# Single environment for every stage and the tests.
+#   conda env create -f environment.yml && conda activate ouroworld
+#   CC=gcc-11 CXX=g++-11 pip install --no-build-isolation ./third_party/diff-gaussian-rasterization
+#   pip install --no-build-isolation -e ".[refinement,reference-video,dev]"
+name: ouroworld
+channels:
+  - nvidia/label/cuda-12.1.0
+  - pytorch
+  - nvidia
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  # The pytorch channel's ffmpeg has no libx264; every video is written with it.
+  - conda-forge::ffmpeg=4.4.0
+  - ninja
+  # nvcc and the CUDA headers must match the CUDA build of torch, or the
+  # rasterizer fails to compile. The version label pins every component; a bare
+  # cuda-toolkit=12.1 lets the solver pull newer (13.x) headers.
+  - nvidia/label/cuda-12.1.0::cuda-nvcc
+  - nvidia/label/cuda-12.1.0::cuda-toolkit
+  - pytorch::pytorch=2.4.1=py3.11_cuda12.1*
+  - pytorch::torchvision=0.19.1=*cu121*
+  - pytorch::pytorch-cuda=12.1
+  # PyTorch 2.4 conda builds need MKL < 2024.1 (undefined symbol iJIT_NotifyEvent otherwise).
+  - conda-forge::mkl=2023.2.0
+  - pip:
+      # imageio-ffmpeg 0.4.8 imports pkg_resources, removed in setuptools 81.
+      - setuptools<81
+      - numpy==1.26.4
+      - omegaconf==2.3.0
+      - plyfile
+      - pillow
+      - tqdm
+      - diffusers==0.35.2
+      - transformers==4.49.0
+      - sentencepiece==0.2.1  # T5 tokenizer of CogVideoX-Fun
+      - protobuf==3.20.3
+      - huggingface-hub==0.34.4
+      - accelerate==1.4.0
+      - peft==0.17.1
+      - safetensors>=0.4.5
+      - lpips==0.1.4
+      - xformers==0.0.28.post1
+      # reference video, multi-view generation
+      - requests>=2.31
+      - imageio==2.27.0
+      - imageio-ffmpeg==0.4.8
+      - opencv-python==4.11.0.86
+      - scipy==1.11.4
+      - scikit-image==0.20.0
+      - einops
+      # evaluation (VBench, SEA-RAFT, I3D)
+      - decord==0.6.0
+      - easydict
+      - openai-clip==1.0.1
+      - timm==1.0.27

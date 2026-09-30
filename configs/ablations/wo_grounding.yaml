@@ -1,0 +1,4 @@
+# Ablation: Δ is not grounded on the reference view nor at t = 0, so it acts on
+# every observation after its warmup. The paper's run trained 17000 iterations.
+model:
+  drift: {zero_reference_view: false, zero_t0: false}

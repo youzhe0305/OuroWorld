@@ -1,0 +1,7 @@
+dataset: Marble
+scene: jurassic_park
+# Imported with: ouroworld-import world --ply <Marble>/Jurassic_Park.ply --forward=-z --up=+y
+#   --position=-1.5,0,-1 --out output/Marble/jurassic_park/scene
+
+reference:
+  selected: reference

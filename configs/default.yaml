@@ -1,0 +1,204 @@
+# OuroWorld default configuration: the paper setting.
+#
+# Every hyperparameter lives here; the code has no hidden defaults. Ablations
+# under configs/ablations/ override a few keys, and `key=value` arguments on
+# the command line override the rest.
+
+dataset: ???                     # e.g. mip-nerf
+scene: ???                       # e.g. room
+
+paths:
+  output_root: output
+  scene_dir: ${paths.output_root}/${dataset}/${scene}/scene           # ScenePackage
+  reference_video_dir: ${paths.output_root}/${dataset}/${scene}/reference_video # ReferenceVideo
+  multiview_dir: ${paths.output_root}/${dataset}/${scene}/multiview   # MultiviewVideos
+  run_dir: ${paths.output_root}/${dataset}/${scene}/model             # checkpoints, metrics
+  render_dir: ${paths.output_root}/${dataset}/${scene}/render         # loop videos
+
+reference:                       # reference view of the scene package (App. A)
+  selected: reference            # reference (the import camera's pose) | candidate_XXX, see
+                                 # <scene_dir>/../reference_candidates/candidates.png
+  width: 1024                    # reference image: the import camera centre-cropped to 16:9
+  height: 576
+  pivot_patch_radius: 12         # a clicked pivot takes the median depth within this radius
+  center_patch_fraction: 0.05    # no click: median depth of the central 5% of the image
+  candidates:                    # yaw/pitch grid around the pivot at the import camera's distance
+    horizontal_degrees: 30.0
+    vertical_degrees: 30.0
+    horizontal_steps: 5          # odd, so the import pose is on the grid
+    vertical_steps: 5
+    forward_fractions: [0.0, 0.05, 0.10, 0.20, 0.50] # moves towards the pivot; one grid each
+    thumbnail_width: 400
+    min_coverage: 0.5            # thumbnails with less rendered surface are marked INVALID
+
+reference_video:                 # looping video seen from the reference camera (§3.1)
+  frame_count: 241               # saved frames, loop ends included; 25 of them must be evenly spaced
+  backend: seedance              # seedance (paper) | wan (open-source option)
+  prompt:                        # GPT motion prompt from the reference image (Fig. 8)
+    model: gpt-5.5
+    reasoning_effort: medium
+    image_detail: high
+    max_output_tokens: 800
+    timeout_seconds: 120
+    additional_instruction: ""   # extra direction for GPT, e.g. what should move
+    api_key_env: OPENAI_API_KEY  # read from the environment or the repository's .env
+    base_url_env: OPENAI_BASE_URL # optional override of default_base_url
+    default_base_url: https://api.openai.com/v1
+  seedance:                      # Seedance 2.0, reference image as first and last frame
+    base_url: https://ark.ap-southeast.bytepluses.com/api/v3
+    api_key_env: ARK_API_KEY
+    model: dreamina-seedance-2-0-260128
+    resolution: 720p
+    ratio: adaptive              # follow the image; it is uploaded at the output size below
+    width: 1280
+    height: 720
+    duration_seconds: 10         # one loop
+    additional_instruction: "Make the motion in the video larger but natural."
+    poll_interval_seconds: 10
+    task_timeout_seconds: 1800
+    request_timeout_seconds: 120
+  wan:                           # Wan 2.2 I2V A14B; gives 81 frames, so set frame_count: 73
+    model: Wan-AI/Wan2.2-I2V-A14B-Diffusers
+    cache_dir: checkpoints/huggingface
+    memory_mode: model           # model | sequential (CPU offload) | cuda
+    max_area: 399360             # 832x480 pixels; the aspect follows the reference image
+    frame_count: 81
+    inference_steps: 40
+    guidance_scale: 3.5
+    fps: 16
+    seed: 0
+  continuity:                    # reject a video that jumps between frames 0 and 1
+    enabled: true
+    max_scale_change_percent: 0.1
+    max_translation_pixels: 1.0
+    max_rotation_degrees: 0.05
+
+generation:                      # multi-view videos from the reference video (§4.1)
+  frame_count: 25                # frames per generated video, loop ends included (4k + 1)
+  orbit:                         # training cameras: the reference camera turned about the pivot
+    view_count: 21               # odd; the middle view is the reference
+    max_yaw_degrees: 20.0        # views span [-20°, 20°], one every 2°
+    axis_tilt_degrees: 5.0       # orbit axis = camera up tilted by this (ViewCrafter "elevation")
+  lifting:                       # depth of the reference video, aligned to the input 3DGS
+    checkpoint: checkpoints/vggt_omega_1b_512.pt
+    image_resolution: 512        # longer image side fed to VGGT-Omega
+    confidence_drop_percentile: 10.0 # least confident depth pixels per frame are not warped
+    alignment_iterations: 8      # IRLS iterations of the disparity affine fit
+    alignment_huber_k: 1.345     # Huber threshold in robust standard deviations
+    min_valid_pixels: 4096       # the fit fails with fewer pixels where both depths exist
+  inpainting:                    # TrajectoryCrafter fills the holes of the warped video
+    base_model: checkpoints/CogVideoX-Fun-V1.1-5b-InP
+    transformer: checkpoints/TrajectoryCrafter
+    caption_model: checkpoints/blip2-opt-2.7b # prompt = BLIP-2 caption of the middle frame + suffix
+    caption_suffix: ". The video is of high quality, and the view is very clear. High quality, masterpiece, best quality, highres, ultra-detailed, fantastic."
+    negative_prompt: "The video is not of a high quality, it has a low resolution. Watermark present in each frame. The background is solid. Strange body and strange trajectory. Distortion."
+    inference_steps: 50
+    guidance_scale: 6.0
+    seed: 43                     # shared by every view: similar noise keeps views consistent
+    cpu_offload: model           # model | sequential | none (diffusers offloading)
+    attention_query_chunk: 1024  # blockwise cross-attention; same result, less memory
+    sweep_frames: 24             # camera sweep reference -> target prepended to the condition
+    appearance_frames: 10        # leading reference frames shown to the model
+    fusion:                      # reliable warp pixels are blended back over the output
+      known_threshold: 0.5
+      max_warp_alpha: 1.0
+      erode_pixels: 3
+      feather_pixels: 6
+      feather_sigma: 3.0
+  save_diagnostics: true         # condition / mask / raw output videos per view
+
+model:
+  sh_degree: 3                   # input 3DGS of lower degree is zero-padded
+  frozen: [sh]                   # canonical attributes kept fixed: xyz | opacity | scale | rotation | sh
+                                 # (colour change over time goes to P's SH residual instead)
+  point_chunk_size: 262144       # fields are evaluated in chunks of this many Gaussians
+  activation_checkpointing: true # recompute field activations in backward to save memory
+
+  periodic:                      # Periodic Deformation Field P (§4.2)
+    heads: [pos, rot, scale, shs]
+    harmonics: 4                 # Fourier harmonics K
+    is_periodic: true            # false: period-2 basis (ablation `period_2t`)
+    width: 128                   # hidden width of the MLPs
+    max_log_scale_delta: 0.693   # |Δ log-scale| <= ln 2, i.e. 0.5x .. 2x
+    motion_grid: {resolution: [64, 64, 64], multires: [1], channels: 16}
+    appearance_grid: {resolution: [64, 64, 64], multires: [1, 2, 4], channels: 16}
+
+  drift:                         # Grounded Drift Field Δ (§4.2); training only
+    enabled: true
+    heads: [pos, rot, scale, shs]
+    is_periodic: false           # drift accumulates along the loop; it does not repeat
+    width: 128
+    view_embedding_dim: 16
+    grid: {resolution: [64, 64, 64], multires: [1], channels: 16}
+    zero_reference_view: true    # grounding: Δ = 0 on the reference view
+    zero_t0: true                # grounding: Δ = 0 at t = 0
+    warmup_iterations: 500       # without full grounding Δ starts after this many iterations
+
+train:
+  iterations: 13000
+  batch_size: 1
+  seed: 0
+  supervision: svco              # svco (the method) | naive_l1 (ablation `wo_svco`)
+  reference_view_probability: 0.5 # share of pixel batches drawn from the reference view
+  field_grad_clip: 1.0           # global gradient-norm bound of the field parameters
+  max_consecutive_skips: 8
+  strike_limit: 3                # prune a Gaussian after this many non-finite gradients in a row
+  checkpoint_iterations: []      # the refinement boundary and the last iteration are always saved
+  log_interval: 100
+
+  learning_rates:                # xyz and field rates are multiplied by the scene extent
+    xyz: [1.6e-4, 1.6e-6]        # initial, final (log-linear decay)
+    field_mlp: [1.6e-4, 1.6e-5]
+    field_grid: [1.6e-3, 1.6e-4]
+    decay_steps: 20000
+    sh_dc: 2.5e-3
+    sh_rest: 1.25e-4
+    opacity: 0.05
+    log_scale: 5.0e-3
+    rotation: 1.0e-3
+
+  losses:
+    sample_gaussians: 8192       # regularisers use a random subset of Gaussians
+    appearance_magnitude: 1.0e-3 # mean |ΔSH|
+    appearance_smoothness: 1.0e-3 # mean |second difference of ΔSH|
+    appearance_delta: 0.04
+    scale_change: 1.0e-3         # mean |Δ log-scale|
+    motion_smoothness: 0.01      # second difference of the deformed Gaussians
+    motion_delta: 0.04
+    motion_weights: {position: 1.0, rotation: 1.0, scale: 0.5}
+    twist_smoothness: 1.0e-3     # second difference of P's twist, applied with the drift terms
+    twist_delta: 0.004149377593360996 # one frame of the 241-frame reference video (1/241)
+    drift_magnitude: 0.01        # visibility-weighted mean squared Δ
+    drift_channel_weights: {translation: 1.0, rotation: 1.0, scale: 1.0, opacity: 1.0, sh: 1.0}
+    drift_view_chunk: 5
+    plane_smoothness: 2.0e-4     # second difference of the motion triplane
+
+  refinement:                    # scene-view consistent optimisation (§4.2, App. C)
+    enabled: true
+    start_after: 12000           # last pixel-only iteration; refinement starts one later
+    weight: 0.1                  # λ_p
+    stable_diffusion: stable-diffusion-v1-5/stable-diffusion-v1-5
+    lcm_lora: checkpoints/lcm-lora-sdv1-5/pytorch_lora_weights.safetensors
+    inference_steps: 50
+    rectification_weights: [0.5, 0.4, 0.3, 0.2, 0.1] # w_i per denoising step
+    prompt: high quality
+    dtype: float16
+
+  densification:
+    enabled: false               # keep the input 3DGS topology
+    start_iteration: 500
+    stop_iteration: 10000
+    interval: 100
+    gradient_threshold: 2.0e-4
+    percent_dense: 0.01
+    min_opacity: 0.005
+    max_prune_fraction: 0.02
+
+render:                          # loop videos (§4.3)
+  checkpoint: latest             # latest | an iteration number
+  n_loops: 2
+  fps: 30
+  cycle_seconds: 10.0
+  orbit_degrees: [-20.0, 20.0]
+  orbit_radius_scale: 0.95
+  orbit_camera_loops: 1

@@ -1,0 +1,4 @@
+https://github.com/Vchitect/VBench 45e79ec
+Local patches (kept from the evaluation of the paper):
+- vbench/background_consistency.py: CLIP features in no_grad batches of 32 (same features, fits 24 GB).
+- vbench/subject_consistency.py: DINO weights loaded from the local checkpoint instead of downloaded.

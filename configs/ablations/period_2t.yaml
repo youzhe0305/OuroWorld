@@ -1,0 +1,3 @@
+# Ablation: P uses a period-2 time basis, so t = 0 and t = 1 are not tied.
+model:
+  periodic: {is_periodic: false}
