@@ -7,23 +7,23 @@
 **Bringing Any 3D World Alive as Diverse, Endlessly Looping 3D Cinemagraphs**
 
 <p align="center">
-  <a href="https://www.youzhexie.me/">You-Zhe Xie</a><sup><img src="asset/Logos/NYCU_Logo.png" alt="NYCU" height="14"><img src="asset/Logos/Alaya_Lab_Logo.png" alt="Alaya Lab" height="14"></sup>,
-  <a href="https://profile.userwei.com/">Ting-Wei Chou</a><sup><img src="asset/Logos/NYCU_Logo.png" alt="NYCU" height="14"></sup>,
-  <a href="https://www.yhlizzz.com/">Yu-Hsuan Li</a><sup><img src="asset/Logos/NYCU_Logo.png" alt="NYCU" height="14"></sup>,<br>
-  <a href="https://kpzhang93.github.io/">Kaipeng Zhang</a><sup><img src="asset/Logos/Alaya_Lab_Logo.png" alt="Alaya Lab" height="14"></sup>,
-  <a href="https://lightchaserx.github.io/">Zhixiang Wang</a><sup><img src="asset/Logos/Alaya_Lab_Logo.png" alt="Alaya Lab" height="14">&dagger;</sup>,
-  <a href="https://yulunalexliu.github.io/">Yu-Lun Liu</a><sup><img src="asset/Logos/NYCU_Logo.png" alt="NYCU" height="14">&dagger;</sup>
+  <a href="https://www.youzhexie.me/">You-Zhe Xie</a><sup><img src="asset/Logos/NYCU_Logo_white.png" alt="NYCU" height="14"><img src="asset/Logos/Alaya_Lab_Logo_white.png" alt="Alaya Lab" height="14"></sup>,
+  <a href="https://profile.userwei.com/">Ting-Wei Chou</a><sup><img src="asset/Logos/NYCU_Logo_white.png" alt="NYCU" height="14"></sup>,
+  <a href="https://www.yhlizzz.com/">Yu-Hsuan Li</a><sup><img src="asset/Logos/NYCU_Logo_white.png" alt="NYCU" height="14"></sup>,<br>
+  <a href="https://kpzhang93.github.io/">Kaipeng Zhang</a><sup><img src="asset/Logos/Alaya_Lab_Logo_white.png" alt="Alaya Lab" height="14"></sup>,
+  <a href="https://lightchaserx.github.io/">Zhixiang Wang</a><sup><img src="asset/Logos/Alaya_Lab_Logo_white.png" alt="Alaya Lab" height="14">&dagger;</sup>,
+  <a href="https://yulunalexliu.github.io/">Yu-Lun Liu</a><sup><img src="asset/Logos/NYCU_Logo_white.png" alt="NYCU" height="14">&dagger;</sup>
 </p>
 <p align="center">
-  <img src="asset/Logos/NYCU_Logo.png" alt="NYCU" height="18"> National Yang Ming Chiao Tung University &nbsp;&nbsp; <img src="asset/Logos/Alaya_Lab_Logo.png" alt="Alaya Lab" height="18"> Alaya Lab<br>
+  <img src="asset/Logos/NYCU_Logo_white.png" alt="NYCU" height="18"> National Yang Ming Chiao Tung University &nbsp;&nbsp; <img src="asset/Logos/Alaya_Lab_Logo_white.png" alt="Alaya Lab" height="18"> Alaya Lab<br>
   <sup>&dagger;</sup> Corresponding authors
 </p>
 
-[![Project Page](https://img.shields.io/badge/OuroWorld-Website-green?logo=googlechrome&logoColor=white)](#)
+[![Project Page](https://img.shields.io/badge/OuroWorld-Website-green?logo=googlechrome&logoColor=white)](https://ouroworld.userwei.com)
 [![arXiv](https://img.shields.io/badge/arXiv-coming%20soon-b31b1b.svg)](#)
 [![Hugging Face Papers](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Papers-yellow)](#)
-[![Dataset Download](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-yellow)](#)
-[![Code](https://img.shields.io/badge/Code-GitHub-black?logo=github&logoColor=white)](#)
+[![Dataset Download](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-yellow)](https://huggingface.co/datasets/YouZhe/OuroWorld-dataset)
+[![Code](https://img.shields.io/badge/Code-GitHub-black?logo=github&logoColor=white)](https://github.com/youzhe0305/OuroWorld)
 [![Contact](https://img.shields.io/badge/Contact-Email-blue?logo=gmail&logoColor=white)](mailto:youzhe0305.cs12@nycu.edu.tw)
 
 OuroWorld turns a static 3D Gaussian Splatting (3DGS) scene from any source
@@ -113,7 +113,7 @@ RAM), CUDA 12.1 and gcc ≤ 12 for the rasterizer. One conda environment covers
 every step.
 
 ```bash
-git clone <this repository> OuroWorld && cd OuroWorld
+git clone https://github.com/youzhe0305/OuroWorld.git OuroWorld && cd OuroWorld
 conda env create -f environment.yml
 conda activate ouroworld
 CC=gcc-11 CXX=g++-11 pip install --no-build-isolation ./third_party/diff-gaussian-rasterization
@@ -144,10 +144,10 @@ key.
 
 ## Released Data
 
-The data is on [Hugging Face](#). Download it into `data/`:
+The data is on [Hugging Face](https://huggingface.co/datasets/YouZhe/OuroWorld-dataset). Download it into `data/`:
 
 ```bash
-huggingface-cli download <hf-dataset-repo> --repo-type dataset --local-dir data
+huggingface-cli download YouZhe/OuroWorld-dataset --repo-type dataset --local-dir data
 ```
 
 The 39 scenes of the paper (App. A), under `data/<kind>/<dataset>/<scene>/`:
