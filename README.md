@@ -161,14 +161,28 @@ The 39 scenes of the paper (App. A), under `data/<kind>/<dataset>/<scene>/`:
 
 | `data/` | Files | Content |
 | --- | --- | --- |
-| `3dgs/` | `point_cloud.ply`, `metadata.yaml`, `pivot.json`, `reference_camera.json`, `reference.png` | the imported static 3DGS, its clip planes, the clicked pivot and the reference view |
+| `3dgs/` | `metadata.yaml`, `pivot.json`, `reference_camera.json`, `reference.png` (`point_cloud.ply` not included, see below) | the clip planes, the clicked pivot and the reference view of each static 3DGS |
 | `refvideo/` | `prompt_used.txt`, `raw.mp4` | the GPT-5.5 motion prompt and the Seedance 2.0 video used in the paper |
 | `render/` | `static.mp4`, `orbit.mp4` | our results (Table 2, "Ours") |
 | `naturalness/` | `minimax_h3_seed_0000.mp4` … `0019.mp4`, `prompt_used.txt`, `reference.png` | the MiniMax-H3 reference videos of KVD (§4.4), 20 seeds per scene, with the prompt and the conditioning image |
 
+**The input static 3DGS scenes (`point_cloud.ply`) are not included.** The
+scenes of HY-World 2.0, Marble and Lyra 2.0 come from 3D world models whose
+licenses do not allow us to redistribute them, so we release the cameras,
+pivots and reference renders of every scene but not the Gaussians themselves.
+The scenes can be obtained from their original sources (the public galleries
+of HY-World 2.0 and Marble, the official code of Lyra 2.0, and the Mip-NeRF 360
+dataset trained with the official 3DGS code for 30k iterations) and imported
+with the [importers below](#full-pipeline-on-your-own-scene). If you run into
+any problem obtaining them, please
+[contact us](mailto:youzhe0305.cs12@nycu.edu.tw).
+
 ## Quick Start
 
-Rerun a scene of the paper, from its static 3DGS to its loop videos:
+Rerun a scene of the paper, from its static 3DGS to its loop videos. First put
+the scene's static 3DGS at `data/3dgs/<dataset>/<scene>/point_cloud.ply`
+(INRIA 3DGS layout, in the coordinates of the released cameras; see
+[Released Data](#released-data)), then:
 
 ```bash
 bash scripts/run_released.sh Marble world    # any <dataset> <scene> under data/3dgs/
@@ -362,7 +376,9 @@ Our code is released under the MIT License (`LICENSE`). Parts derived from
 Free4D (S-Lab License 1.0) and 3D Gaussian Splatting (Inria / MPII), the
 vendored code in `third_party/` and the model weights keep their own
 licenses, several of them non-commercial, so the full pipeline is for
-non-commercial research use. See `NOTICE` and `LICENSES/`.
+non-commercial research use. See `NOTICE` and `LICENSES/`. The input 3DGS
+scenes of the paper are not redistributed and remain under the licenses of
+their original sources.
 
 We build on [3D Gaussian Splatting](https://github.com/graphdeco-inria/gaussian-splatting),
 [Free4D](https://github.com/TQTQliu/Free4D),
