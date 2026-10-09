@@ -20,8 +20,8 @@
 </p>
 
 [![Project Page](https://img.shields.io/badge/OuroWorld-Website-green?logo=googlechrome&logoColor=white)](https://ouroworld.userwei.com)
-[![arXiv](https://img.shields.io/badge/arXiv-coming%20soon-b31b1b.svg)](#)
-[![Hugging Face Papers](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Papers-yellow)](#)
+[![arXiv](https://img.shields.io/badge/arXiv-2610.12461-b31b1b.svg)](https://arxiv.org/abs/2610.12461)
+[![Hugging Face Papers](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Papers-yellow)](https://huggingface.co/papers/2610.12461)
 [![Dataset Download](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-yellow)](https://huggingface.co/datasets/YouZhe/OuroWorld-dataset)
 [![Code](https://img.shields.io/badge/Code-GitHub-black?logo=github&logoColor=white)](https://github.com/youzhe0305/OuroWorld)
 [![Contact](https://img.shields.io/badge/Contact-Email-blue?logo=gmail&logoColor=white)](mailto:youzhe0305.cs12@nycu.edu.tw)
@@ -394,7 +394,7 @@ We build on [3D Gaussian Splatting](https://github.com/graphdeco-inria/gaussian-
 @article{xie2026ouroworld,
   title   = {{OuroWorld}: Bringing Any {3D} World Alive as Diverse, Endlessly Looping {3D} Cinemagraphs},
   author  = {Xie, You-Zhe and Chou, Ting-Wei and Li, Yu-Hsuan and Zhang, Kaipeng and Wang, Zhixiang and Liu, Yu-Lun},
-  journal = {arXiv preprint arXiv:XXXX.XXXXX},
+  journal = {arXiv preprint arXiv:2610.12461},
   year    = {2026}
 }
 ```
